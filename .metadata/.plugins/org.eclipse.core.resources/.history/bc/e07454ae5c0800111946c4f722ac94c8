@@ -1,0 +1,19 @@
+package com.example.demo.controller;
+
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController("/auth")
+public class AuthController {
+    
+	@Autowired
+	private UserService userService;
+	
+	
+	public String login() {
+		return "Login endpoint";
+	}
+    
+	 public String register() {
+		return "Register endpoint";
+	}
+}

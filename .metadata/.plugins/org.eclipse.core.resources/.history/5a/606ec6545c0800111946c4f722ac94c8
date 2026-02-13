@@ -1,0 +1,68 @@
+package com.example.demo.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.entities.Role;
+import com.example.demo.entities.User;
+import com.example.demo.repository.RoleRepository;
+import com.example.demo.repository.UserRepository;
+
+@Service
+public class UserService {
+	@Autowired
+	private UserRepository userRepository;
+	
+	@Autowired
+	private RoleRepository roleRepository;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+	
+	public String register(String email, String password, String name) {
+		// Check if user already exists
+//		if (userRepository.findByEmail(email).isPresent()) {
+//			return "User already exists";
+//		}
+//		
+//		// Create new user
+//		var user = new com.example.demo.entities.User();
+//		user.setEmail(email);
+//		user.setPassword(passwordEncoder.encode(password)); // Hash the password
+//		user.setName(name);
+//		
+//		// Assign default role (e.g., "USER")
+//		var role = roleRepository.findByRoleName("USER")
+//				.orElseThrow(() -> new RuntimeException("Default role not found"));
+//		user.getRoles().add(role);
+//		
+//		userRepository.save(user);
+//		
+//		return "User registered successfully";
+		if(userRepository.findByEmail(email).isPresent()) {
+			
+			return "User already exists";
+		}
+		User user = new User();
+		user.setEmail(email);
+		user.setPassword(passwordEncoder.encode(password));
+		user.setName(name);
+		
+		Role role  = roleRepository.findByRoleName("USER")
+				.orElseThrow(() -> new RuntimeException("Default role not found"));
+		
+		user.getRoles().add(role);
+		
+		userRepository.save(user);
+		return "User registered successfully";
+		
+		
+		
+		
+		user.setRoles(null);
+	}
+	
+	public S
+	
+}

@@ -1,0 +1,46 @@
+package com.example.entities;
+
+import java.util.List;
+
+import org.springframework.security.core.userdetails.UserDetails;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+
+@Entity	
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+
+public class User {
+	@Id
+    @Column(name = "email")
+    private String email;
+    // Flow: Email used for login + JWT subject
+
+    @Column(nullable = false)
+    private String password;
+    // Flow: Stored encrypted → BCrypt
+
+    @Column(nullable = false)
+    private boolean active = true;
+    // Flow: Used by security to allow/block login
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<RoleMap> roleMaps;
+    // Flow: Link user → roles via RoleMap
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private UserDetails userDetails;
+    // Flow: Profile info stored separately
+}

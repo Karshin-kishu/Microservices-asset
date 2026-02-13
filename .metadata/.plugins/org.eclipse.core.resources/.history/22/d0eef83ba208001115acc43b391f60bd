@@ -1,0 +1,5 @@
+package com.example.assetservice.service;
+
+public class CategoryService {
+
+}

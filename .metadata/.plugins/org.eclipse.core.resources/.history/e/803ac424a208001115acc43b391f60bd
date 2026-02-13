@@ -1,0 +1,11 @@
+package com.example.assetservice.service;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class VendorService {
+	
+	@Autowired
+	private VendorRepository vendorRepository;
+	
+}

@@ -1,0 +1,12 @@
+package com.example.assetservice.controller;
+
+@RestController
+@RequestMapping("/assetservice")
+public class AssetServiceController {
+	@GetMapping("/assets")
+	public List<?> myAssets(Authentication authentication) {
+	    String email = authentication.getName(); // <-- email from introspection
+	    // use email in service queries (createdBy, ownership etc.)
+	}
+
+}

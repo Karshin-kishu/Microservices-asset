@@ -1,0 +1,31 @@
+package com.example.entities;
+
+import java.util.List;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+
+public class Role {
+	   @Id
+	    @GeneratedValue(strategy = GenerationType.IDENTITY)
+	    private Long id;
+
+	    // =====================================================
+	    // 🔹 ROLE NAME
+	    // Example:
+	    // ROLE_USER
+	    // ROLE_ADMIN
+	    // ROLE_SUPERADMIN
+	    // =====================================================
+	    @Column(nullable = false, unique = true)
+	    private String roleName;
+
+	    // =====================================================
+	    // 🔹 MAPPING BACK TO USERS
+	    // =====================================================
+	    @ManyToMany(mappedBy = "roles")
+	    private List<User> users;
+}

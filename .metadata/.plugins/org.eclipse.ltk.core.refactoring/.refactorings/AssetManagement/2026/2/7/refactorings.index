@@ -1,0 +1,17 @@
+1770891941182	Rename type 'RolePermission'
+1770892455253	Move compilation unit
+1770892491238	Move compilation unit
+1770892522005	Move compilation unit
+1770894194164	Delete element
+1770894200339	Delete element
+1770894209150	Delete element
+1770894218344	Delete element
+1770894522025	Rename package 'com.example.config'
+1770894537938	Rename package 'com.example.controller'
+1770894560982	Rename package 'com.example.dto'
+1770894574455	Rename package 'com.example.entities'
+1770894586512	Rename package 'com.example.exception'
+1770894599264	Rename package 'com.example.repository'
+1770894611291	Rename package 'com.example.security'
+1770894623927	Rename package 'com.example.service'
+1770894637341	Rename package 'com.example.util'

@@ -1,0 +1,179 @@
+package com.example.assetservice.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+
+import com.example.assetservice.dto.AssetRequestDTO;
+import com.example.assetservice.dto.AssetResponseDTO;
+import com.example.assetservice.entities.Asset;
+import com.example.assetservice.entities.Category;
+import com.example.assetservice.entities.Vendor;
+import com.example.assetservice.exception.BadRequestException;
+import com.example.assetservice.exception.ResourceNotFoundException;
+import com.example.assetservice.repository.AssetRepository;
+import com.example.assetservice.repository.CategoryRepository;
+import com.example.assetservice.repository.VendorRepository;
+
+@Service
+public class AssetService {
+	
+	@Autowired
+	private AssetRepository assetRepository;
+	@Autowired
+	private VendorRepository vendorRepository;
+	@Autowired
+	private CategoryRepository categoryRepository;
+	
+
+    public AssetService(AssetRepository assetRepository,
+                        CategoryRepository categoryRepository,
+                        VendorRepository vendorRepository) {
+        this.assetRepository = assetRepository;
+        this.categoryRepository = categoryRepository;
+        this.vendorRepository = vendorRepository;
+    }
+    
+    public AssetResponseDTO create(AssetRequestDTO assetRequestDTO, Authentication auth) {
+		
+    	String email = auth.getName(); // Get email from authentication
+    	
+    	assetRepository.findByAssetTag(assetRequestDTO.getAssetTag()).ifPresent(a -> {
+            throw new BadRequestException("assetTag already exists: " + assetRequestDTO.getAssetTag());
+        });
+
+        assetRepository.findBySerialNumber(assetRequestDTO.getSerialNumber()).ifPresent(a -> {
+            throw new BadRequestException("serialNumber already exists: " + assetRequestDTO.getSerialNumber());
+        });
+
+        Category category = categoryRepository.findById(assetRequestDTO.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + assetRequestDTO.getCategoryId()));
+
+        Vendor vendor = vendorRepository.findById(assetRequestDTO.getVendorId())
+                .orElseThrow(() -> new ResourceNotFoundException("Vendor not found: " + assetRequestDTO.getVendorId()));
+		
+		// Create and save the asset
+		Asset asset = Asset.builder()
+                .assetTag(assetRequestDTO.getAssetTag())
+                .name(assetRequestDTO.getName())
+                .type(assetRequestDTO.getType())
+                .serialNumber(assetRequestDTO.getSerialNumber())
+                .purchaseDate(assetRequestDTO.getPurchaseDate())
+                .warrantyEndDate(assetRequestDTO.getWarrantyEndDate())
+                .status(assetRequestDTO.getStatus() == null ? "ACTIVE" : assetRequestDTO.getStatus())
+                .location(assetRequestDTO.getLocation())
+                .createdBy(email)
+                .category(category)
+                .vendor(vendor)
+                .build();
+		
+		Asset savedAsset = assetRepository.save(asset);
+		
+		// Convert to response DTO
+		return toResponse(savedAsset);
+	}
+    
+    public AssetResponseDTO patchStatus(Long id, String status, Authentication auth) {
+        String email = auth.getName();
+
+        Asset asset = assetRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + id));
+
+        if (!email.equalsIgnoreCase(asset.getCreatedBy())) {
+            throw new BadRequestException("You are not allowed to update status");
+        }
+
+        asset.setStatus(status);
+        Asset saved = assetRepository.save(asset);
+        return toResponse(saved);
+    }
+    
+
+    public AssetResponseDTO update(Long id, AssetRequestDTO dto, Authentication auth) {
+        String email = auth.getName();
+
+        Asset asset = assetRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + id));
+
+        if (!email.equalsIgnoreCase(asset.getCreatedBy())) {
+            throw new BadRequestException("You are not allowed to update this asset");
+        }
+
+        // Uniqueness checks if changed
+        if (dto.getAssetTag() != null && !dto.getAssetTag().equals(asset.getAssetTag())) {
+            assetRepository.findByAssetTag(dto.getAssetTag()).ifPresent(a -> {
+                throw new BadRequestException("assetTag already exists: " + dto.getAssetTag());
+            });
+            asset.setAssetTag(dto.getAssetTag());
+        }
+
+        if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(asset.getSerialNumber())) {
+            assetRepository.findBySerialNumber(dto.getSerialNumber()).ifPresent(a -> {
+                throw new BadRequestException("serialNumber already exists: " + dto.getSerialNumber());
+            });
+            asset.setSerialNumber(dto.getSerialNumber());
+        }
+
+        if (dto.getName() != null) asset.setName(dto.getName());
+        if (dto.getType() != null) asset.setType(dto.getType());
+        if (dto.getPurchaseDate() != null) asset.setPurchaseDate(dto.getPurchaseDate());
+        if (dto.getWarrantyEndDate() != null) asset.setWarrantyEndDate(dto.getWarrantyEndDate());
+        if (dto.getStatus() != null) asset.setStatus(dto.getStatus());
+        if (dto.getLocation() != null) asset.setLocation(dto.getLocation());
+
+        if (dto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(dto.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + dto.getCategoryId()));
+            asset.setCategory(category);
+        }
+
+        if (dto.getVendorId() != null) {
+            Vendor vendor = vendorRepository.findById(dto.getVendorId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Vendor not found: " + dto.getVendorId()));
+            asset.setVendor(vendor);
+        }
+
+        Asset saved = assetRepository.save(asset);
+        return toResponse(saved);
+    }
+    
+    public List<AssetResponseDTO> listMine(Authentication auth) {
+        String email = auth.getName();
+        return assetRepository.findByCreatedBy(email).stream().map(this::toResponse).toList();
+    }
+
+    public AssetResponseDTO getById(Long id, Authentication auth) {
+        String email = auth.getName();
+        Asset asset = assetRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + id));
+
+        // ownership rule (you can relax it later for ADMIN)
+        if (!email.equalsIgnoreCase(asset.getCreatedBy())) {
+            throw new BadRequestException("You are not allowed to access this asset");
+        }
+
+        return toResponse(asset);
+    }
+    
+    private AssetResponseDTO toResponse(Asset a) {
+        return AssetResponseDTO.builder()
+                .id(a.getId())
+                .assetTag(a.getAssetTag())
+                .name(a.getName())
+                .type(a.getType())
+                .serialNumber(a.getSerialNumber())
+                .purchaseDate(a.getPurchaseDate())
+                .warrantyEndDate(a.getWarrantyEndDate())
+                .status(a.getStatus())
+                .location(a.getLocation())
+                .createdBy(a.getCreatedBy())
+                .createdAt(a.getCreatedAt())
+                .updatedAt(a.getUpdatedAt())
+                .categoryId(a.getCategory().getId())
+                .categoryName(a.getCategory().getName())
+                .vendorId(a.getVendor().getId())
+                .vendorName(a.getVendor().getName())
+                .build();
+    }
+	
+}

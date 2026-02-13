@@ -1,0 +1,80 @@
+package com.example.assetservice.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.assetservice.dto.VendorDTO;
+import com.example.assetservice.entities.Vendor;
+import com.example.assetservice.exception.BadRequestException;
+import com.example.assetservice.exception.ResourceNotFoundException;
+import com.example.assetservice.repository.VendorRepository;
+
+@Service
+public class VendorService {
+	
+	@Autowired
+	private VendorRepository vendorRepository;
+	
+	public Vendor create(VendorDTO dto) {
+        vendorRepository.findByName(dto.getName()).ifPresent(v -> {
+            throw new BadRequestException("Vendor already exists: " + dto.getName());
+        });
+
+        if (dto.getGstNumber() != null && !dto.getGstNumber().isBlank()) {
+            vendorRepository.findByGstNumber(dto.getGstNumber()).ifPresent(v -> {
+                throw new BadRequestException("GST already exists: " + dto.getGstNumber());
+            });
+        }
+
+        Vendor v = Vendor.builder()
+                .name(dto.getName())
+                .gstNumber(dto.getGstNumber())
+                .contactEmail(dto.getContactEmail())
+                .phone(dto.getPhone())
+                .address(dto.getAddress())
+                .active(dto.getActive() == null ? true : dto.getActive())
+                .build();
+
+        return vendorRepository.save(v);
+    }
+
+    public List<Vendor> list() {
+        return vendorRepository.findAll();
+    }
+
+    public Vendor update(Long id, VendorDTO dto) {
+        Vendor v = vendorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Vendor not found: " + id));
+
+        if (dto.getName() != null && !dto.getName().equalsIgnoreCase(v.getName())) {
+            vendorRepository.findByName(dto.getName()).ifPresent(existing -> {
+                throw new BadRequestException("Vendor name already exists: " + dto.getName());
+            });
+            v.setName(dto.getName());
+        }
+
+        if (dto.getGstNumber() != null && !dto.getGstNumber().equals(v.getGstNumber())) {
+            vendorRepository.findByGstNumber(dto.getGstNumber()).ifPresent(existing -> {
+                throw new BadRequestException("GST already exists: " + dto.getGstNumber());
+            });
+            v.setGstNumber(dto.getGstNumber());
+        }
+
+        if (dto.getContactEmail() != null) v.setContactEmail(dto.getContactEmail());
+        if (dto.getPhone() != null) v.setPhone(dto.getPhone());
+        if (dto.getAddress() != null) v.setAddress(dto.getAddress());
+        if (dto.getActive() != null) v.setActive(dto.getActive());
+
+        return vendorRepository.save(v);
+    }
+
+    public void deactivate(Long id) {
+        Vendor v = vendorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Vendor not found: " + id));
+        v.setActive(false);
+        vendorRepository.save(v);
+    }
+	
+}

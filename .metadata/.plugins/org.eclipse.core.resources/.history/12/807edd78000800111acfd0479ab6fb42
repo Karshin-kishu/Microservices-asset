@@ -1,0 +1,38 @@
+package com.example.service;
+
+import java.util.Date;
+
+import org.springframework.security.core.userdetails.UserDetails;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+
+public class JwtService {
+	 	@Autowired
+	    private JwtUtil jwtUtil;
+
+	    // =====================================================
+	    // 🔹 STEP 1: Generate token (called after login success)
+	    // AuthController → JwtService → JwtUtil
+	    // =====================================================
+	    public String generateToken(String username) {
+	        return jwtUtil.generateToken(username);
+	    }
+
+	    // =====================================================
+	    // 🔹 STEP 2: Extract username from JWT
+	    // JwtFilter → JwtService → JwtUtil
+	    // =====================================================
+	    public String extractUsername(String token) {
+	        return jwtUtil.extractUsername(token);
+	    }
+
+	    // =====================================================
+	    // 🔹 STEP 3: Validate JWT
+	    // JwtFilter → JwtService → JwtUtil.validateToken()
+	    // =====================================================
+	    public boolean validateToken(String token, String username) {
+	        return jwtUtil.validateToken(token, username);
+	    }
+}

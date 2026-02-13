@@ -1,0 +1,74 @@
+package com.example.demo.config;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.example.demo.security.JwtFilter;
+import com.example.demo.service.CustomUserDetailsService;
+
+import lombok.RequiredArgsConstructor;
+
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+    
+	@Autowired
+    private JwtFilter jwtFilter;
+
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
+
+    // =====================================================
+    // 🔹 PASSWORD ENCODER (used in registration + login)
+    // =====================================================
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    // =====================================================
+    // 🔹 MAIN SECURITY FILTER CHAIN
+    // This is where security rules are defined
+    // =====================================================
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        http
+
+            // Disable CSRF (for APIs)
+            .csrf(csrf -> csrf.disable())
+
+            // Stateless session (JWT based)
+            .sessionManagement(session ->
+                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+
+            // Authorization rules
+            .authorizeHttpRequests(auth -> auth
+
+                    // Public APIs
+                    .requestMatchers("/auth/**").permitAll()
+
+                    // Secure everything else
+                    .anyRequest().authenticated()
+            )
+
+            // Add JWT filter before default Spring filter
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+}

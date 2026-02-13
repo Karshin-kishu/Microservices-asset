@@ -1,0 +1,10 @@
+package com.example.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.example.entities.User;
+
+public interface UserRepository extends JpaRepository<User, String> {
+		 // Flow: JWT filter calls → load user from DB
+	 java.util.Optional<User> findByEmail(String email);
+}

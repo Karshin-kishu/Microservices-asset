@@ -1,0 +1,8 @@
+package com.example.assetservice.controller;
+
+@RestController
+@RequestMapping("/categories")
+public class CategoryController {
+	@Autowired
+	private CategoryService categoryService;
+}

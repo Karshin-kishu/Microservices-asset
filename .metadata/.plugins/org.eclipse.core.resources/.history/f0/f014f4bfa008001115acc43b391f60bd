@@ -1,0 +1,29 @@
+package com.example.assetservice.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.assetservice.repository.AssetRepository;
+import com.example.assetservice.repository.CategoryRepository;
+import com.example.assetservice.repository.VendorRepository;
+
+@Service
+public class AssetService {
+	
+	@Autowired
+	private AssetRepository assetRepository;
+	@Autowired
+	private VendorRepository vendorRepository;
+	@Autowired
+	private CategoryRepository categoryRepository;
+	
+
+    public AssetService(AssetRepository assetRepository,
+                        CategoryRepository categoryRepository,
+                        VendorRepository vendorRepository) {
+        this.assetRepository = assetRepository;
+        this.categoryRepository = categoryRepository;
+        this.vendorRepository = vendorRepository;
+    }
+	
+}

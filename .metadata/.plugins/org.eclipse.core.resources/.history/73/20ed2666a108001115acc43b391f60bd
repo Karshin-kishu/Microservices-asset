@@ -1,0 +1,72 @@
+package com.example.assetservice.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+
+import com.example.assetservice.dto.AssetRequestDTO;
+import com.example.assetservice.dto.AssetResponseDTO;
+import com.example.assetservice.entities.Asset;
+import com.example.assetservice.entities.Category;
+import com.example.assetservice.entities.Vendor;
+import com.example.assetservice.exception.BadRequestException;
+import com.example.assetservice.exception.ResourceNotFoundException;
+import com.example.assetservice.repository.AssetRepository;
+import com.example.assetservice.repository.CategoryRepository;
+import com.example.assetservice.repository.VendorRepository;
+
+@Service
+public class AssetService {
+	
+	@Autowired
+	private AssetRepository assetRepository;
+	@Autowired
+	private VendorRepository vendorRepository;
+	@Autowired
+	private CategoryRepository categoryRepository;
+	
+
+    public AssetService(AssetRepository assetRepository,
+                        CategoryRepository categoryRepository,
+                        VendorRepository vendorRepository) {
+        this.assetRepository = assetRepository;
+        this.categoryRepository = categoryRepository;
+        this.vendorRepository = vendorRepository;
+    }
+    
+    public AssetResponseDTO create(AssetRequestDTO assetRequestDTO, Authentication auth) {
+		
+    	String email = auth.getName(); // Get email from authentication
+    	
+    	assetRepository.findByAssetTag(assetRequestDTO.getAssetTag()).ifPresent(a -> {
+            throw new BadRequestException("assetTag already exists: " + assetRequestDTO.getAssetTag());
+        });
+
+        assetRepository.findBySerialNumber(assetRequestDTO.getSerialNumber()).ifPresent(a -> {
+            throw new BadRequestException("serialNumber already exists: " + assetRequestDTO.getSerialNumber());
+        });
+
+        Category category = categoryRepository.findById(assetRequestDTO.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + assetRequestDTO.getCategoryId()));
+
+        Vendor vendor = vendorRepository.findById(assetRequestDTO.getVendorId())
+                .orElseThrow(() -> new ResourceNotFoundException("Vendor not found: " + assetRequestDTO.getVendorId()));
+		
+		// Create and save the asset
+		Asset asset = new Asset();
+		asset.setAssetTag(assetRequestDTO.getAssetTag());
+		asset.setSerialNumber(assetRequestDTO.getSerialNumber());
+		asset.setModel(assetRequestDTO.getModel());
+		asset.setPurchaseDate(assetRequestDTO.getPurchaseDate());
+		asset.setWarrantyExpiryDate(assetRequestDTO.getWarrantyExpiryDate());
+		asset.setCreatedBy(assetRequestDTO.getCreatedBy());
+		asset.setCategory(category);
+		asset.setVendor(vendor);
+		
+		Asset savedAsset = assetRepository.save(asset);
+		
+		// Convert to response DTO
+		return convertToResponseDTO(savedAsset);
+	}
+	
+}

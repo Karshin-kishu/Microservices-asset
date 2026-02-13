@@ -1,0 +1,41 @@
+package com.example.assetservice.security;
+
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.example.assetservice.service.AuthIntrospectService;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+public class JwtFilter extends OncePerRequestFilter{
+	
+	private final AuthIntrospectService introspectService;
+
+	public JwtFilter(AuthIntrospectService introspectService) {
+		this.introspectService = introspectService;
+	}
+
+	@Override
+	protected void doFilterInternal(HttpServletRequest request,
+			HttpServletResponse response, FilterChain filterChain)
+			throws java.io.IOException, ServletException {
+
+		String authHeader = request.getHeader("Authorization");
+		if (authHeader != null && authHeader.startsWith("Bearer ")) {
+			String token = authHeader.substring(7);
+			var introspectResult = authIntrospectService.introspectToken(token);
+			if (introspectResult.isValid()) {
+				// Token is valid, set authentication in context
+				var authorities = introspectResult.getRoles().stream()
+						.map(role -> new org.springframework.security.core.authority.SimpleGrantedAuthority(role))
+						.toList();
+				var auth = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+						introspectResult.getEmail(), null, authorities);
+				org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(auth);
+			}
+		}
+		filterChain.doFilter(request, response);
+	}
+}

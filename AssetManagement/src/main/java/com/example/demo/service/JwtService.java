@@ -1,0 +1,36 @@
+package com.example.demo.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.util.JwtUtil;
+
+@Service
+public class JwtService {
+	 	@Autowired
+	    private JwtUtil jwtUtil;
+
+	    // =====================================================
+	    // 🔹 STEP 1: Generate token (called after login success)
+	    // AuthController → JwtService → JwtUtil
+	    // =====================================================
+	    public String generateToken(String username) {
+	        return jwtUtil.generateToken(username);
+	    }
+
+	    // =====================================================
+	    // 🔹 STEP 2: Extract username from JWT
+	    // JwtFilter → JwtService → JwtUtil
+	    // =====================================================
+	    public String extractUsername(String token) {
+	        return jwtUtil.extractUsername(token);
+	    }
+
+	    // =====================================================
+	    // 🔹 STEP 3: Validate JWT
+	    // JwtFilter → JwtService → JwtUtil.validateToken()
+	    // =====================================================
+	    public boolean validateToken(String token, String username) {
+	        return jwtUtil.validateToken(token, username);
+	    }
+}

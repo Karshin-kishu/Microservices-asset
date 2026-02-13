@@ -1,0 +1,16 @@
+package com.example.assetservice.service;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class AuthIntrospectService {
+	@Value("${auth.introspect.url}")
+		private String introspectUrl;
+
+	private RestTemplate restTemplate;
+	public IntrospectResponseDTO introspectToken(String token) {
+		// Implement the logic to call the auth service's introspect endpoint
+		// and return the response as an IntrospectResponseDTO
+		// You can use RestTemplate or WebClient to make the HTTP call
+	}
+}

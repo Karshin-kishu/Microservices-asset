@@ -1,0 +1,25 @@
+package com.example.demo.service;
+
+@Service
+public class AuthService {
+	
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+    private final CustomUserDetailsService userDetailsService;
+
+    public LoginResponse login(LoginRequest request) {
+
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
+
+        String token = jwtService.generateToken(userDetails);
+
+        return new LoginResponse(token);
+    }
+}

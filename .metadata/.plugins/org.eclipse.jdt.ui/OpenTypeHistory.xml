@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<typeInfoHistroy>
+    <typeInfo handle="=assetservice/C:\/Users\/karsh\/.m2\/repository\/org\/springframework\/security\/spring-security-web\/7.0.2\/spring-security-web-7.0.2.jar=/maven.pomderived=/true=/=/maven.groupId=/org.springframework.security=/=/maven.artifactId=/spring-security-web=/=/maven.version=/7.0.2=/=/maven.scope=/compile=/=/maven.pomderived=/true=/&lt;org.springframework.security.web(AuthenticationEntryPoint.class[AuthenticationEntryPoint" modifiers="1537" timestamp="1770887123565"/>
+    <typeInfo handle="=AssetManagement/C:\/Users\/karsh\/.m2\/repository\/org\/springframework\/data\/spring-data-jpa\/4.0.2\/spring-data-jpa-4.0.2.jar=/maven.pomderived=/true=/=/maven.groupId=/org.springframework.data=/=/maven.artifactId=/spring-data-jpa=/=/maven.version=/4.0.2=/=/maven.scope=/compile=/=/maven.pomderived=/true=/&lt;org.springframework.data.jpa.repository(JpaRepository.class[JpaRepository" modifiers="1537" timestamp="1770887122247"/>
+</typeInfoHistroy>

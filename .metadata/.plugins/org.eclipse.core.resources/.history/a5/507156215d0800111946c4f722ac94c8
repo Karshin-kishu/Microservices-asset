@@ -1,0 +1,26 @@
+package com.example.demo.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.demo.dto.RegisterDTO;
+import com.example.demo.service.UserService;
+
+@RestController("/auth")
+public class AuthController {
+    
+	@Autowired
+	private UserService userService;
+	
+	
+	public String login() {
+		return "Login endpoint";
+	}
+    
+	 public String register(RegisterDTO registerDTO) {
+		 
+		userService.register(registerDTO.getEmail(), registerDTO.getPassword(), registerDTO.getName());
+		
+		return "Registration successful";
+	}
+}

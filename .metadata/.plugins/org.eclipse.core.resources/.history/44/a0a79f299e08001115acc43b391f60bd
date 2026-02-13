@@ -1,0 +1,5 @@
+package com.example.assetservice.dto;
+
+public class AssetRequestDTO {
+
+}

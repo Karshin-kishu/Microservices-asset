@@ -1,0 +1,61 @@
+package com.example.assetservice.service;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.assetservice.dto.CategoryDTO;
+import com.example.assetservice.entities.Category;
+import com.example.assetservice.exception.BadRequestException;
+import com.example.assetservice.exception.ResourceNotFoundException;
+import com.example.assetservice.repository.CategoryRepository;
+
+@Service
+public class CategoryService {
+	
+	@Autowired
+	private CategoryRepository categoryRepository;
+	
+	public Category create(CategoryDTO dto) {
+        if (categoryRepository.findByName(dto.getName()).isPresent()) {
+            throw new BadRequestException("Category already exists: " + dto.getName());
+        }
+        Category c = Category.builder()
+                .name(dto.getName())
+                .description(dto.getDescription())
+                .active(dto.getActive() == null ? true : dto.getActive())
+                .createdAt(LocalDate.now())
+                .build();
+        return categoryRepository.save(c);
+    }
+
+    public List<Category> list() {
+        return categoryRepository.findAll();
+    }
+
+    public Category update(Long id, CategoryDTO dto) {
+        Category c = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + id));
+
+        if (dto.getName() != null && !dto.getName().equalsIgnoreCase(c.getName())) {
+            categoryRepository.findByName(dto.getName()).ifPresent(existing -> {
+                throw new BadRequestException("Category name already exists: " + dto.getName());
+            });
+            c.setName(dto.getName());
+        }
+
+        if (dto.getDescription() != null) c.setDescription(dto.getDescription());
+        if (dto.getActive() != null) c.setActive(dto.getActive());
+
+        return categoryRepository.save(c);
+    }
+
+    public void deactivate(Long id) {
+        Category c = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + id));
+        c.setActive(false);
+        categoryRepository.save(c);
+    }
+}

@@ -1,0 +1,37 @@
+package com.example.demo.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.dto.LoginRequestDTO;
+import com.example.demo.dto.LoginResponseDTO;
+
+@Service
+public class AuthService {
+	
+	@Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+	private JwtService jwtService;
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
+
+    public LoginResponseDTO login(LoginRequestDTO request) {
+
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
+
+        String token = jwtService.generateToken(userDetails);
+
+        return new LoginResponse(token);
+    }
+}

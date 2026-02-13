@@ -1,0 +1,72 @@
+package com.example.assetservice.security;
+
+import java.net.http.HttpHeaders;
+import java.util.Collections;
+import java.util.stream.Collectors;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.example.assetservice.dto.IntrospectResponseDTO;
+import com.example.assetservice.service.AuthIntrospectService;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+public class JwtFilter extends OncePerRequestFilter{
+	
+	private final AuthIntrospectService introspectService;
+
+	public JwtFilter(AuthIntrospectService introspectService) {
+		this.introspectService = introspectService;
+	}
+
+	@Override
+	protected void doFilterInternal(HttpServletRequest request,
+			HttpServletResponse response, FilterChain filterChain)
+			throws java.io.IOException, ServletException {
+
+		String authHeader = request.getHeader("Authorization");
+
+        // No token → let Spring Security handle (will become 401 for protected endpoints)
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // If already authenticated, continue
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Flow Step 2: Call auth-service introspect endpoint
+        IntrospectResponseDTO result = introspectService.introspect(authHeader);
+
+        // Flow Step 3: If invalid → 401
+        if (result == null || !result.isValid() || result.getEmail() == null) {
+            // Trigger entry point by not setting authentication
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Flow Step 4: Build authorities from roles
+        var authorities = (result.getRoles() == null)
+                ? Collections.<SimpleGrantedAuthority>emptyList()
+                : result.getRoles().stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
+
+        // Flow Step 5: Set Authentication in SecurityContext
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(result.getEmail(), null, authorities);
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        filterChain.doFilter(request, response);
+    }
+}
