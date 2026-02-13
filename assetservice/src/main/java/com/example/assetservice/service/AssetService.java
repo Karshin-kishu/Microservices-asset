@@ -159,6 +159,10 @@ public class AssetService {
         return toResponse(asset);
     }
     
+    public List<AssetResponseDTO> listAll() {
+		return assetRepository.findAll().stream().map(this::toResponse).toList();
+	}
+    
     private AssetResponseDTO toResponse(Asset a) {
         return AssetResponseDTO.builder()
                 .id(a.getId())

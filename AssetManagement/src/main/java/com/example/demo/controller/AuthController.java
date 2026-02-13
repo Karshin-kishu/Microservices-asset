@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.IntrospectResponseDTO;
 import com.example.demo.dto.LoginRequestDTO;
+import com.example.demo.dto.LoginResponseDTO;
+import com.example.demo.dto.RefreshRequestDTO;
 import com.example.demo.dto.RegisterDTO;
 import com.example.demo.entities.User;
 import com.example.demo.repository.UserRepository;
@@ -40,6 +42,13 @@ public class AuthController {
 	public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginDTO) {
 		System.out.println("Received login request: " + loginDTO.getEmail()); 	
 		return ResponseEntity.ok(authService.login(loginDTO));
+	}
+	
+	@PostMapping("/refresh")
+	public ResponseEntity<LoginResponseDTO> refresh(
+			@RequestBody RefreshRequestDTO refreshDTO,
+			@RequestHeader(value = "User-Agent", required = false) String userAgent) {
+		return ResponseEntity.ok(authService.refresh(refreshDTO, userAgent));
 	}
 	
 	

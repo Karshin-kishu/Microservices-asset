@@ -1,0 +1,10 @@
+package com.example.demo.dto;
+
+import lombok.Data;
+
+@Data
+public class RefreshRequestDTO {
+
+	private String refreshToken;
+    private String deviceId;
+}

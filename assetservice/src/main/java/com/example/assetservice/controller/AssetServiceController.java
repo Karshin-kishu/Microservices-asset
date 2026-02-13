@@ -1,4 +1,4 @@
-package com.example.assetservice.controller;
+ 	package com.example.assetservice.controller;
 
 import java.util.List;
 import java.util.Map;
@@ -30,8 +30,8 @@ public class AssetServiceController {
 		@GetMapping("/assets")
 		public List<?> myAssets(Authentication authentication) {
 			String email = authentication.getName(); // <-- email from introspection
-			// use email in service queries (createdBy, ownership etc.)
-			return null;
+			return assetService.listAll();
+			
 		}
 	
 	 	@PostMapping("/create")
