@@ -1,0 +1,51 @@
+package com.example.assetservice.service;
+
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import com.example.assetservice.dto.IntrospectResponseDTO;
+
+@Service
+public class AuthIntrospectService {
+		@Value("${auth.service.base-url}")
+		private String introspectUrl;
+
+	private RestTemplate restTemplate;
+	  
+	public AuthIntrospectService(RestTemplate restTemplate) {
+	        this.restTemplate = restTemplate;
+    }
+	
+	public IntrospectResponseDTO introspect(String bearerHeader) {
+		
+		String url = introspectUrl + "/auth/introspect";
+    	HttpHeaders headers = new HttpHeaders();
+    		        headers.set(HttpHeaders.AUTHORIZATION, bearerHeader);
+    		        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+    	// Create an HttpEntity with the headersHttpEntity<Void> entity = new HttpEntity<>(headers);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+		try {
+			 ResponseEntity<IntrospectResponseDTO> response =
+	                    restTemplate.exchange(url, HttpMethod.POST, entity, IntrospectResponseDTO.class);
+
+	            // If auth-service returns valid JSON
+	            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+	                return response.getBody();
+	            }
+		} catch (Exception e) {
+	        // Handle exceptions (e.g., log error, return default response)
+	        e.printStackTrace();
+	        return new IntrospectResponseDTO(); // Return a default response or handle as needed
+	    }
+		return new IntrospectResponseDTO(false,null,null); // Return a default response if auth-service is unreachable or returns invalid response
+	}
+}

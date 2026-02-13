@@ -1,0 +1,31 @@
+package com.example.assetservice.dto;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class AssetResponseDTO {
+	private Long id;
+    private String assetTag;
+    private String name;
+    private String type;
+    private String serialNumber;
+    private LocalDate purchaseDate;
+    private LocalDate warrantyEndDate;
+    private String status;
+    private String location;
+
+    private String createdBy;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    private Long categoryId;
+    private String categoryName;
+
+    private Long vendorId;
+    private String vendorName;
+}
